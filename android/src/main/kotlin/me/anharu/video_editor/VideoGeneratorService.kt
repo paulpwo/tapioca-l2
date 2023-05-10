@@ -8,7 +8,9 @@ import android.graphics.Paint
 import com.daasuu.mp4compose.composer.Mp4Composer
 import com.daasuu.mp4compose.filter.*
 import me.anharu.video_editor.filter.GlImageOverlayFilter
+import me.anharu.video_editor.filter.GlImageOverlayFilterFull
 import me.anharu.video_editor.ImageOverlay
+import me.anharu.video_editor.ImageOverlayFull
 import io.flutter.plugin.common.MethodChannel.Result
 import android.graphics.Paint.Align
 import android.graphics.Paint.ANTI_ALIAS_FLAG
@@ -44,6 +46,10 @@ class VideoGeneratorService(
                     "ImageOverlay" -> {
                         val imageOverlay = ImageOverlay(v)
                         filters.add(GlImageOverlayFilter(imageOverlay))
+                    }
+                    "ImageOverlayFull" -> {
+                        val imageOverlayFull = ImageOverlayFull(v)
+                        filters.add(GlImageOverlayFilterFull(imageOverlayFull))
                     }
                 }
             }

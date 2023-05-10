@@ -23,6 +23,10 @@ abstract class TapiocaBall {
     return _ImageOverlay(bitmap, x, y);
   }
 
+  static TapiocaBall imageOverlayFull(Uint8List bitmap) {
+    return _ImageOverlayFull(bitmap);
+  }
+
   /// Returns a [Map<String, dynamic>] representation of this object.
   Map<String, dynamic> toMap();
 
@@ -31,40 +35,36 @@ abstract class TapiocaBall {
 }
 
 /// Enum that specifies the color filter type.
-enum Filters {
-  pink,
-  white,
-  blue
-}
+enum Filters { pink, white, blue }
 
 class _Filter extends TapiocaBall {
- late String color;
- late double degree;
- _Filter(Filters type, double degree) {
-   switch (type) {
-     case Filters.pink:
-      this.color = "#ffc0cb";
-      break;
-     case Filters.white:
-       this.color = "#ffffff";
-       break;
-     case Filters.blue:
-       this.color = "#1f8eed";
-   }
-   this.degree = degree;
- }
- _Filter.color(Color colorInstance, double degree) {
-   this.color = '#${colorInstance.value.toRadixString(16).substring(2)}';
-   this.degree = degree;
- }
+  late String color;
+  late double degree;
+  _Filter(Filters type, double degree) {
+    switch (type) {
+      case Filters.pink:
+        this.color = "#ffc0cb";
+        break;
+      case Filters.white:
+        this.color = "#ffffff";
+        break;
+      case Filters.blue:
+        this.color = "#1f8eed";
+    }
+    this.degree = degree;
+  }
+  _Filter.color(Color colorInstance, double degree) {
+    this.color = '#${colorInstance.value.toRadixString(16).substring(2)}';
+    this.degree = degree;
+  }
 
- Map<String, dynamic> toMap() {
-   return {'type': color, 'degree': degree };
- }
+  Map<String, dynamic> toMap() {
+    return {'type': color, 'degree': degree};
+  }
 
- String toTypeName() {
-   return 'Filter';
- }
+  String toTypeName() {
+    return 'Filter';
+  }
 }
 
 class _TextOverlay extends TapiocaBall {
@@ -76,7 +76,7 @@ class _TextOverlay extends TapiocaBall {
   _TextOverlay(this.text, this.x, this.y, this.size, this.color);
 
   Map<String, dynamic> toMap() {
-    return {'text': text, 'x': x, 'y': y, 'size': size, 'color': '#${color.value.toRadixString(16).substring(2)}' };
+    return {'text': text, 'x': x, 'y': y, 'size': size, 'color': '#${color.value.toRadixString(16).substring(2)}'};
   }
 
   String toTypeName() {
@@ -91,10 +91,24 @@ class _ImageOverlay extends TapiocaBall {
   _ImageOverlay(this.bitmap, this.x, this.y);
 
   Map<String, dynamic> toMap() {
-    return { 'bitmap': bitmap,  'x': x, 'y': y};
+    return {'bitmap': bitmap, 'x': x, 'y': y};
   }
 
   String toTypeName() {
     return 'ImageOverlay';
+  }
+}
+
+class _ImageOverlayFull extends TapiocaBall {
+  final Uint8List bitmap;
+
+  _ImageOverlayFull(this.bitmap);
+
+  Map<String, dynamic> toMap() {
+    return {'bitmap': bitmap};
+  }
+
+  String toTypeName() {
+    return 'ImageOverlayFull';
   }
 }

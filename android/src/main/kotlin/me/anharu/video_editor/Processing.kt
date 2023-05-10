@@ -13,6 +13,10 @@ data class ImageOverlay(val map: Map<String, Any>) {
     val y: Int by map
 }
 
+data class ImageOverlayFull(val map: Map<String, Any>) {
+    val bitmap: ByteArray    by map
+}
+
 data class TextOverlay(val map: Map<String, Any>) {
     val text: String    by map
     val x: Int by map
