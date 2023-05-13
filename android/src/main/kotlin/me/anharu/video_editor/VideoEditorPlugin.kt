@@ -88,9 +88,27 @@ public class VideoEditorPlugin : FlutterPlugin, MethodCallHandler, PluginRegistr
                         result.error("processing_data_not_found", "the processing is not found.", null)
                         return
                     }
+            // val generator = VideoGeneratorService(Mp4Composer(srcFilePath, destFilePath))
+            // generator.writeVideofile(processing, result, getActivity,newEventSink)
+            val startTime: Long = call.argument<Int>("startTime")?.toLong() ?: 0
+            val endTime: Long = call.argument<Int>("endTime")?.toLong() ?: -1
             val generator = VideoGeneratorService(Mp4Composer(srcFilePath, destFilePath))
-            generator.writeVideofile(processing, result, getActivity,newEventSink)
-        } else {
+            generator.writeVideofile(processing, result, getActivity, newEventSink, startTime = startTime, endTime = endTime)
+        } else if (call.method == "trim_video") {
+
+             val getActivity = activity ?: return
+                val srcFilePath: String = call.argument("srcFilePath") ?: run {
+                    result.error("src_file_path_not_found", "the src file path is not found.", null)
+                    return
+                }
+                val destFilePath: String = call.argument("destFilePath") ?: run {
+                    result.error("dest_file_path_not_found", "the dest file path is not found.", null)
+                    return
+                }
+                val startTime: Long = call.argument<Int>("startTime")?.toLong() ?: 0
+                val endTime: Long = call.argument<Int>("endTime")?.toLong() ?: -1
+                VideoTrimmer(srcFilePath, destFilePath, result, getActivity).trimVideo(startTime, endTime)
+        }else {
             result.notImplemented()
         }
     }

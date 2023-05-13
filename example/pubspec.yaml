@@ -1,6 +1,7 @@
 name: tapioca_example
 description: Demonstrates how to use the video_editor plugin.
 publish_to: 'none'
+version: 0.0.1+10
 
 environment:
   sdk: ">=2.12.0 <3.0.0"

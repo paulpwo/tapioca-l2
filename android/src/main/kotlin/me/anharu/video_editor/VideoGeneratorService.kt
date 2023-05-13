@@ -23,13 +23,13 @@ import java.util.logging.StreamHandler
 
 
 interface VideoGeneratorServiceInterface {
-    fun writeVideofile(processing: HashMap<String,HashMap<String,Any>>, result: Result, activity: Activity, eventSink: EventChannel.EventSink);
+    fun writeVideofile(processing: HashMap<String,HashMap<String,Any>>, result: Result, activity: Activity, eventSink: EventChannel.EventSink, startTime: Long, endTime: Long);
 }
 
 class VideoGeneratorService(
         private val composer: Mp4Composer
 ) : VideoGeneratorServiceInterface {
-    override fun writeVideofile(processing: HashMap<String,HashMap<String,Any>>, result: Result, activity: Activity, eventSink: EventChannel.EventSink ) {
+    override fun writeVideofile(processing: HashMap<String,HashMap<String,Any>>, result: Result, activity: Activity, eventSink: EventChannel.EventSink,  startTime: Long, endTime: Long) {
                  val filters: MutableList<GlFilter> = mutableListOf()
         try {
             processing.forEach { (k, v) ->
@@ -60,6 +60,7 @@ class VideoGeneratorService(
             })
         }
         composer.filter(GlFilterGroup( filters))
+                .trim(startTime, endTime)
                 .videoFormatMimeType(VideoFormatMimeType.HEVC)
                 .listener(object : Mp4Composer.Listener {
                     override fun onProgress(progress: Double) {

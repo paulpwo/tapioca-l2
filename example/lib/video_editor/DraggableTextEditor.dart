@@ -8,10 +8,12 @@ import 'matrix_gesture_detector.dart';
 class DraggableTextEditor extends StatefulWidget {
   final String floatText;
   final ValueNotifier<Matrix4> notifier;
-  bool isEditfloatText;
+  final ValueNotifier<bool> isEditfloatText;
+
   final ValueNotifier<Color> textColor;
   final GlobalKey textKey;
   final GlobalKey paintText;
+  // final VoidCallback onTouch;
 
   DraggableTextEditor(
       {required this.floatText,
@@ -52,21 +54,44 @@ class _DraggableTextEditorState extends State<DraggableTextEditor> {
                       alignment: WrapAlignment.center,
                       runAlignment: WrapAlignment.center,
                       children: [
-                        widget.isEditfloatText
-                            ? Container(
+                        ValueListenableBuilder(
+                            valueListenable: widget.isEditfloatText,
+                            builder: (BuildContext context, bool value, Widget? child) {
+                              if (value) {
+                                return Container(
+                                  key: widget.textKey,
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: DottedDecoration(
+                                    shape: Shape.box,
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: Colors.white,
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (widget.isEditfloatText.value) {
+                                        widget.isEditfloatText.value = false;
+                                      } else {
+                                        widget.isEditfloatText.value = true;
+                                      }
+                                      setState(() {});
+                                    },
+                                    child: Text(
+                                      widget.floatText,
+                                      style: TextStyle(color: widget.textColor.value, fontSize: 40),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                );
+                              }
+                              return Container(
                                 key: widget.textKey,
                                 padding: const EdgeInsets.all(10),
-                                decoration: DottedDecoration(
-                                  shape: Shape.box,
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: Colors.white,
-                                ),
                                 child: GestureDetector(
                                   onTap: () {
-                                    if (widget.isEditfloatText) {
-                                      widget.isEditfloatText = false;
+                                    if (widget.isEditfloatText.value) {
+                                      widget.isEditfloatText.value = false;
                                     } else {
-                                      widget.isEditfloatText = true;
+                                      widget.isEditfloatText.value = true;
                                     }
                                     setState(() {});
                                   },
@@ -76,26 +101,8 @@ class _DraggableTextEditorState extends State<DraggableTextEditor> {
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
-                              )
-                            : Container(
-                                key: widget.textKey,
-                                padding: const EdgeInsets.all(10),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (widget.isEditfloatText) {
-                                      widget.isEditfloatText = false;
-                                    } else {
-                                      widget.isEditfloatText = true;
-                                    }
-                                    setState(() {});
-                                  },
-                                  child: Text(
-                                    widget.floatText,
-                                    style: TextStyle(color: widget.textColor.value, fontSize: 40),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              )
+                              );
+                            }),
                       ],
                     ),
                   ),

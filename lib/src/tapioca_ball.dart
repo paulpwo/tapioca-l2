@@ -4,8 +4,8 @@ import "dart:ui";
 /// TapiocaBall is a effect to apply to the video.
 abstract class TapiocaBall {
   /// Creates a object to apply color filter from [Filters].
-  static TapiocaBall filter(Filters filter, double degree) {
-    return _Filter(filter, degree);
+  static TapiocaBall filter(Filters filter, double degree, {double alpha = 0.5}) {
+    return _Filter(filter, degree, alpha: alpha);
   }
 
   /// Creates a object to apply color filter from [Color].
@@ -35,12 +35,13 @@ abstract class TapiocaBall {
 }
 
 /// Enum that specifies the color filter type.
-enum Filters { pink, white, blue }
+enum Filters { pink, white, blue, trasparent }
 
 class _Filter extends TapiocaBall {
   late String color;
   late double degree;
-  _Filter(Filters type, double degree) {
+  late double alpha = 0.5;
+  _Filter(Filters type, double degree, {double alpha = 0.5}) {
     switch (type) {
       case Filters.pink:
         this.color = "#ffc0cb";
@@ -50,8 +51,12 @@ class _Filter extends TapiocaBall {
         break;
       case Filters.blue:
         this.color = "#1f8eed";
+        break;
+      case Filters.trasparent:
+        this.color = "#fffff0";
     }
     this.degree = degree;
+    this.alpha = alpha;
   }
   _Filter.color(Color colorInstance, double degree) {
     this.color = '#${colorInstance.value.toRadixString(16).substring(2)}';
@@ -59,7 +64,7 @@ class _Filter extends TapiocaBall {
   }
 
   Map<String, dynamic> toMap() {
-    return {'type': color, 'degree': degree};
+    return {'type': color, 'degree': degree, 'alpha': alpha};
   }
 
   String toTypeName() {

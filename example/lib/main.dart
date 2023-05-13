@@ -75,7 +75,7 @@ class _MyAppState extends State<MyApp> {
       navigatorKey: navigatorKey,
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Video Editor Example App'),
         ),
         body: Center(
             child: isLoading
