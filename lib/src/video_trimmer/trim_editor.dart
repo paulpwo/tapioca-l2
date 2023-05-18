@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:tapioca/src/video_editor.dart';
 import 'package:tapioca/src/video_trimmer/thumbnail_viewer.dart';
 import 'package:tapioca/src/video_trimmer/trim_editor_painter.dart';
 import 'package:video_player/video_player.dart';
