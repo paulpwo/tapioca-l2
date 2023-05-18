@@ -1,9 +1,11 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -38,8 +40,6 @@ class VideoScreen extends StatefulWidget {
   final ValueNotifier<bool> isEditfloatText = ValueNotifier(false);
   final ValueNotifier<Color> textColor = ValueNotifier(Colors.blue);
   final ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
-  
-
 
   VideoScreen(this.path);
 
@@ -51,14 +51,14 @@ class _VideoAppState extends State<VideoScreen> {
   //? *************** INNER VARS ********************************************
   static const EventChannel _channel = const EventChannel('video_editor_progress');
   late StreamSubscription _streamSubscription;
-
-  final String path;
-  _VideoAppState(this.path);
-
   late VideoPlayerController _controller;
-
+  final String path;
   double startPos = 0;
   double endPos = -1;
+  
+  _VideoAppState(this.path);
+
+
 
   @override
   void initState() {
@@ -74,6 +74,7 @@ class _VideoAppState extends State<VideoScreen> {
         setState(() {});
       });
   }
+
   /// Use for receive Streams from Native code Kotlin or Swift
   void _enableEventReceiver() {
     _streamSubscription = _channel.receiveBroadcastStream().listen((dynamic event) {
@@ -84,10 +85,12 @@ class _VideoAppState extends State<VideoScreen> {
       print('Received error: ${error.message}');
     }, cancelOnError: true);
   }
+
   /// Close receive Streams enabled by [_enableEventReceiver]
   void _disableEventReceiver() {
     _streamSubscription.cancel();
   }
+
   /// Insert or edit new text
   /// Valid for both methods and iimplement [showDialog] widget
   void _insertText(BuildContext context) async {
@@ -190,141 +193,151 @@ class _VideoAppState extends State<VideoScreen> {
           }
         },
       ),
-      body: Stack(
-        key: widget.videoPlayerCanvaKey,
-        fit: StackFit.expand,
-        children: [
-          _controller.value.isInitialized
-              ? GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (!_controller.value.isPlaying &&
-                          _controller.value.isInitialized &&
-                          (_controller.value.duration == _controller.value.position)) {
-                        _controller.initialize();
-                        _controller.play();
-                      } else {
-                        _controller.value.isPlaying ? _controller.pause() : _controller.play();
-                      }
-                    });
-                  },
-                  child: FullScreenWidget(
-                    // videoKey: widget.videoPlayerCanvaKey,
-                    size: _controller.value.size,
-                    child: Container(
-                      margin: EdgeInsets.only(top: 1),
-                      color: Colors.red,
-                      key: widget.videoPlayerKey,
-                      alignment: Alignment.topCenter,
-                      child: AspectRatio(
-                        aspectRatio: _controller.value.aspectRatio,
-                        child: VideoPlayer(_controller),
+      body: SafeArea(
+        child: Stack(
+          key: widget.videoPlayerCanvaKey,
+          // fit: StackFit.expand,
+          children: [
+            _controller.value.isInitialized
+                ? GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (!_controller.value.isPlaying &&
+                            _controller.value.isInitialized &&
+                            (_controller.value.duration == _controller.value.position)) {
+                          _controller.initialize();
+                          _controller.play();
+                        } else {
+                          _controller.value.isPlaying ? _controller.pause() : _controller.play();
+                        }
+                      });
+                    },
+                    child: FullScreenWidget(
+                      // videoKey: widget.videoPlayerCanvaKey,
+                      size: _controller.value.size,
+                      child: Container(
+                        margin: EdgeInsets.only(top: 0),
+                        color: Colors.red,
+                        key: widget.videoPlayerKey,
+                        alignment: Alignment.topCenter,
+                        child: AspectRatio(
+                          aspectRatio: _controller.value.aspectRatio,
+                          child: VideoPlayer(_controller),
+                        ),
                       ),
                     ),
-                  ),
-                )
-              : Container(),
-          // NOTE: Video Trimmer
-          _controller.value.isInitialized
-              ? Positioned(
+                  )
+                : Container(),
+            // NOTE: Video Trimmer
+            if (_controller.value.isInitialized)
+              Positioned(
                   left: 20,
                   right: 20,
                   child: TrimEditor(
-                    viewerWidth: MediaQuery.of(context).size.width - 20,
+                  viewerWidth: MediaQuery.of(context).size.width - 40,
                     viewerHeight: 50,
                     videoFile: path,
                     videoPlayerController: _controller,
                     fit: BoxFit.cover,
                     circleSize: 8.0,
-                    circleSizeOnDrag: 10.0,
+                  circleSizeOnDrag: 13.0,
                     circlePaintColor: Colors.red,
                     borderPaintColor: Colors.red,
                     onChangeEnd: (position) {
                       this.endPos = position;
-                      print("onchange end ==== $position");
+                    print("TrimEditor onchange end ==== $position");
                       // setState(() {});
                     },
                     onChangeStart: (position) {
                       this.startPos = position;
-                      print("onchange start ==== $position");
+                    print("TrimEditor onchange start ==== $position");
                       // setState(() {});
                     },
-                    onChangePlaybackState: (state) {},
+                  onChangePlaybackState: (state) {
+                    print("TrimEditor onchange onChangePlaybackState ==== $state");
+                  },
                   ),
-                )
-              : Container(),
-          // NOTE: Color Picker
-          ValueListenableBuilder(
+              ),
+            // NOTE: Color Picker
+            ValueListenableBuilder(
+                valueListenable: ValueNotifier(widget.floatText),
+                builder: (BuildContext context, String value, Widget? child) {
+                  if (value.isNotEmpty) {
+                    return Positioned(
+                      top: 80,
+                      right: 0,
+                      child: ColorPicker(300, (current) {
+                        if (current != null) {
+                          try {
+                            widget.textColor.value = current;
+                            setState(() {});
+                          } catch (e) {
+                            print(e);
+                          }
+                        }
+                      }),
+                    );
+                  }
+                  return Container();
+                }),
+
+            // NOTE: Moveable Text
+            ValueListenableBuilder(
               valueListenable: ValueNotifier(widget.floatText),
               builder: (BuildContext context, String value, Widget? child) {
                 if (value.isNotEmpty) {
                   return Positioned(
-                    top: 80,
+                    top: 10,
+                    bottom: 55,
+                    left: 0,
                     right: 0,
-                    child: ColorPicker(300, (current) {
-                      if (current != null) {
-                        try {
-                          widget.textColor.value = current;
-                          setState(() {});
-                        } catch (e) {
-                          print(e);
-                        }
-                      }
-                    }),
+                    child: RepaintBoundary(
+                      key: widget.containerKey,
+                      child: Container(
+                        // color: Color.fromARGB(200, 0, 0, 2),
+                        child: DraggableTextEditor(
+                          textKey: widget.textKey,
+                          paintText: widget.paintText,
+                          notifier: widget.notifier,
+                          isEditfloatText: widget.isEditfloatText,
+                          textColor: widget.textColor,
+                          floatText: widget.floatText,
+                        ),
+                      ),
+                    ),
                   );
                 }
                 return Container();
-              }),
-
-          // NOTE: Moveable Text
-          if (widget.floatText != '')
-            Positioned(
-              top: 10,
-              bottom: 55,
-              left: 0,
-              right: 0,
-              child: RepaintBoundary(
-                key: widget.containerKey,
-                child: Container(
-                  // color: Color.fromARGB(200, 0, 0, 2),
-                  child: DraggableTextEditor(
-                    textKey: widget.textKey,
-                    paintText: widget.paintText,
-                    notifier: widget.notifier,
-                    isEditfloatText: widget.isEditfloatText,
-                    textColor: widget.textColor,
-                    floatText: widget.floatText,
-                  ),
-                ),
-              ),
+              },
             ),
-          // NOTE: Progress compress with current progress
-          ValueListenableBuilder(
-              valueListenable: widget.download,
-              builder: (BuildContext context, bool value, Widget? child) {
-                if (value) {
-                  return Positioned(
-                      child: Center(
-                    child: CircularProgressIndicator(),
-                  ));
-                }
-                return Container();
-              }),
-          ValueListenableBuilder(
-              valueListenable: widget.download,
-              builder: (BuildContext context, bool value, Widget? child) {
-                if (value) {
-                  return Positioned(
-                      child: Center(
-                    child: Text(
-                      widget.processPercentage.toString() + "%",
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  ));
-                }
-                return Container();
-              })
-        ],
+            // NOTE: Progress compress with current progress
+            ValueListenableBuilder(
+                valueListenable: widget.download,
+                builder: (BuildContext context, bool value, Widget? child) {
+                  if (value) {
+                    return Positioned(
+                        child: Center(
+                      child: CircularProgressIndicator(),
+                    ));
+                  }
+                  return Container();
+                }),
+            ValueListenableBuilder(
+                valueListenable: widget.download,
+                builder: (BuildContext context, bool value, Widget? child) {
+                  if (value) {
+                    return Positioned(
+                        child: Center(
+                      child: Text(
+                        widget.processPercentage.toString() + "%",
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ));
+                  }
+                  return Container();
+                })
+          ],
+        ),
       ),
     );
   }
