@@ -17,28 +17,29 @@ import 'DraggableTextEditor.dart';
 import 'color_picker.dart';
 import 'fullscreen.dart';
 import 'dart:ui' as ui;
-import 'package:image/image.dart' as IMG;
 
 import 'video_app_bar.dart';
 
 class VideoScreen extends StatefulWidget {
+  //? *************** GENERAL VARS ********************************************
+  final String path;
   String floatText = '';
+  late AppBar appBarView;
   int processPercentage = 0;
   GlobalKey appBar = GlobalKey();
   GlobalKey textKey = GlobalKey();
   GlobalKey paintText = GlobalKey();
+  GlobalKey containerKey = GlobalKey();
   GlobalKey videoPlayerKey = GlobalKey();
   GlobalKey videoPlayerCanvaKey = GlobalKey();
-  GlobalKey containerKey = GlobalKey();
-
-  final String path;
+  final navigatorKey = GlobalKey<NavigatorState>();
+  //? *************** NOTIFIERs VARS ******************************************
   final ValueNotifier<bool> download = ValueNotifier(false);
   final ValueNotifier<bool> isEditfloatText = ValueNotifier(false);
   final ValueNotifier<Color> textColor = ValueNotifier(Colors.blue);
   final ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
-  final navigatorKey = GlobalKey<NavigatorState>();
+  
 
-  late AppBar appBarView;
 
   VideoScreen(this.path);
 
@@ -47,6 +48,7 @@ class VideoScreen extends StatefulWidget {
 }
 
 class _VideoAppState extends State<VideoScreen> {
+  //? *************** INNER VARS ********************************************
   static const EventChannel _channel = const EventChannel('video_editor_progress');
   late StreamSubscription _streamSubscription;
 
@@ -72,7 +74,7 @@ class _VideoAppState extends State<VideoScreen> {
         setState(() {});
       });
   }
-
+  /// Use for receive Streams from Native code Kotlin or Swift
   void _enableEventReceiver() {
     _streamSubscription = _channel.receiveBroadcastStream().listen((dynamic event) {
       setState(() {
@@ -82,11 +84,12 @@ class _VideoAppState extends State<VideoScreen> {
       print('Received error: ${error.message}');
     }, cancelOnError: true);
   }
-
+  /// Close receive Streams enabled by [_enableEventReceiver]
   void _disableEventReceiver() {
     _streamSubscription.cancel();
   }
-
+  /// Insert or edit new text
+  /// Valid for both methods and iimplement [showDialog] widget
   void _insertText(BuildContext context) async {
     final _textFieldController = TextEditingController();
     if (widget.floatText != '') {
@@ -127,18 +130,6 @@ class _VideoAppState extends State<VideoScreen> {
     try {
       if (widget.floatText.isNotEmpty) {
         var pngBytes = await _captureImageInner();
-        //NOTE Mostrar resultado de ejemplo [TEST] imagen
-        // Crear un widget de imagen con la imagen a escala
-        // Image widgetImage = Image.memory(pngBytes!);
-        // await showDialog(
-        //   context: context,
-        //   builder: (BuildContext context) {
-        //     return Container(
-        //       child: widgetImage,
-        //       color: Colors.yellow,
-        //     );
-        //   },
-        // );
         tapiocaBalls.add(TapiocaBall.imageOverlayFull(pngBytes!));
       } else {
         // NOTE: Fake filter for re-code video
@@ -156,10 +147,12 @@ class _VideoAppState extends State<VideoScreen> {
         GallerySaver.saveVideo(newpath).then((bool? success) {
           print(success.toString());
         });
+        //NOTE: Use for test new video
         _loadVideo(newpath);
-
+        //NOTE: Use for open new view without Getx
         // Navigator.of(context).push(MaterialPageRoute(builder: (context) => VideoScreen(newpath)));
-
+        //NOTE: Use for open new view with Getx
+        // Get.offNamed('route_name)
         setState(() {
           widget.download.value = false;
         });
@@ -181,19 +174,15 @@ class _VideoAppState extends State<VideoScreen> {
         color: Colors.red,
         isEditfloatText: widget.isEditfloatText,
         onAudioIconPressed: () {
-          // Do something when audio icon is pressed
           setState(() {});
         },
         onRemoveTextPressed: () {
-          // Do something when remove text icon is pressed
           _removeText(context);
         },
         onInsertTextPressed: () {
-          // Do something when insert text icon is pressed
           _insertText(context);
         },
         onSavePressed: () {
-          // Do something when save icon is pressed
           try {
             _save(context);
           } catch (e) {
@@ -201,65 +190,6 @@ class _VideoAppState extends State<VideoScreen> {
           }
         },
       ),
-
-      //     AppBar(
-      //   key: widget.appBar,
-      //   backgroundColor: Colors.amber,
-      //   elevation: 0,
-      //   title: Text(''),
-      //   actions: [
-      //     ValueListenableBuilder(
-      //         valueListenable: widget.isEditfloatText,
-      //         builder: (BuildContext context, bool value, Widget? child) {
-      //           if (!value) {
-      //             return Row(
-      //               children: [
-      //                 IconButton(
-      //                     onPressed: () {
-      //                       // onlyAudio.value = !onlyAudio.value;
-      //                       // _generateAudiowave(context);
-      //                       setState(() {});
-      //                     },
-      //                     icon: const Icon(Icons.mic_none_sharp, color: Colors.white)),
-      //                 IconButton(
-      //                   onPressed: () {
-      //                     _insertText(context);
-      //                   },
-      //                   icon: const Icon(Icons.text_fields, color: Colors.white),
-      //                 ),
-      //                 IconButton(
-      //                   onPressed: () {
-      //                     try {
-      //                       _save(context);
-      //                     } catch (e) {
-      //                       print(e);
-      //                     }
-      //                   },
-      //                   icon: const Icon(Icons.download, color: Colors.white),
-      //                 )
-      //               ],
-      //             );
-      //           }
-      //           return Row(
-      //             children: [
-      //               IconButton(
-      //                 onPressed: () {
-      //                   _removeText(context);
-      //                 },
-      //                 icon: const Icon(Icons.delete, color: Colors.white),
-      //               ),
-      //               IconButton(
-      //                 onPressed: () {
-      //                   _insertText(context);
-      //                 },
-      //                 icon: const Icon(Icons.text_fields, color: Colors.white),
-      //               ),
-      //             ],
-      //           );
-      //         }),
-      //   ],
-      //   // agregar más widgets, como iconos o botones aquí
-      // ),
       body: Stack(
         key: widget.videoPlayerCanvaKey,
         fit: StackFit.expand,
@@ -294,7 +224,7 @@ class _VideoAppState extends State<VideoScreen> {
                   ),
                 )
               : Container(),
-          // NOTE: Trimmer video
+          // NOTE: Video Trimmer
           _controller.value.isInitialized
               ? Positioned(
                   left: 20,
@@ -324,7 +254,6 @@ class _VideoAppState extends State<VideoScreen> {
                 )
               : Container(),
           // NOTE: Color Picker
-          // if (widget.isEditfloatText.value == true && widget.floatText != '')
           ValueListenableBuilder(
               valueListenable: ValueNotifier(widget.floatText),
               builder: (BuildContext context, String value, Widget? child) {
@@ -346,7 +275,7 @@ class _VideoAppState extends State<VideoScreen> {
                 }
                 return Container();
               }),
-            
+
           // NOTE: Moveable Text
           if (widget.floatText != '')
             Positioned(
