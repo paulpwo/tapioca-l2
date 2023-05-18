@@ -16,7 +16,7 @@ class VideoAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onRemoveTextPressed;
   final VoidCallback onInsertTextPressed;
   final VoidCallback onSavePressed;
-  final MaterialColor color;
+  final Color color;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);

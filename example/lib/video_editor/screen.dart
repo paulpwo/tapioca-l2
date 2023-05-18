@@ -193,151 +193,161 @@ class _VideoAppState extends State<VideoScreen> {
           }
         },
       ),
-      body: SafeArea(
-        child: Stack(
-          key: widget.videoPlayerCanvaKey,
-          // fit: StackFit.expand,
-          children: [
-            _controller.value.isInitialized
-                ? GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        if (!_controller.value.isPlaying &&
-                            _controller.value.isInitialized &&
-                            (_controller.value.duration == _controller.value.position)) {
-                          _controller.initialize();
-                          _controller.play();
-                        } else {
-                          _controller.value.isPlaying ? _controller.pause() : _controller.play();
-                        }
-                      });
-                    },
-                    child: FullScreenWidget(
-                      // videoKey: widget.videoPlayerCanvaKey,
-                      size: _controller.value.size,
-                      child: Container(
-                        margin: EdgeInsets.only(top: 0),
-                        color: Colors.red,
-                        key: widget.videoPlayerKey,
-                        alignment: Alignment.topCenter,
-                        child: AspectRatio(
-                          aspectRatio: _controller.value.aspectRatio,
-                          child: VideoPlayer(_controller),
-                        ),
+      body: Stack(
+        key: widget.videoPlayerCanvaKey,
+        fit: StackFit.expand,
+        children: [
+          _controller.value.isInitialized
+              ? GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (!_controller.value.isPlaying &&
+                          _controller.value.isInitialized &&
+                          (_controller.value.duration == _controller.value.position)) {
+                        _controller.initialize();
+                        _controller.play();
+                      } else {
+                        _controller.value.isPlaying ? _controller.pause() : _controller.play();
+                      }
+                    });
+                  },
+                  child: FullScreenWidget(
+                    // videoKey: widget.videoPlayerCanvaKey,
+                    size: _controller.value.size,
+                    child: Container(
+                      // margin: EdgeInsets.only(top: 0),
+                      color: Colors.red,
+                      key: widget.videoPlayerKey,
+                      alignment: Alignment.topCenter,
+                      child: AspectRatio(
+                        aspectRatio: _controller.value.aspectRatio,
+                        child: VideoPlayer(_controller),
                       ),
                     ),
-                  )
-                : Container(),
-            // NOTE: Video Trimmer
-            if (_controller.value.isInitialized)
-              Positioned(
-                  left: 20,
-                  right: 20,
-                  child: TrimEditor(
-                  viewerWidth: MediaQuery.of(context).size.width - 40,
-                    viewerHeight: 50,
-                    videoFile: path,
-                    videoPlayerController: _controller,
-                    fit: BoxFit.cover,
-                    circleSize: 8.0,
-                  circleSizeOnDrag: 13.0,
-                    circlePaintColor: Colors.red,
-                    borderPaintColor: Colors.red,
-                    onChangeEnd: (position) {
-                      this.endPos = position;
-                    print("TrimEditor onchange end ==== $position");
-                      // setState(() {});
-                    },
-                    onChangeStart: (position) {
-                      this.startPos = position;
-                    print("TrimEditor onchange start ==== $position");
-                      // setState(() {});
-                    },
-                  onChangePlaybackState: (state) {
-                    print("TrimEditor onchange onChangePlaybackState ==== $state");
-                  },
                   ),
+                )
+              : Container(),
+          // NOTE: Video Trimmer
+          if (_controller.value.isInitialized)
+            Positioned(
+              top: 10,
+              left: 20,
+              right: 20,
+              child: TrimEditor(
+                viewerWidth: MediaQuery.of(context).size.width - 40,
+                viewerHeight: 50,
+                videoFile: path,
+                videoPlayerController: _controller,
+                fit: BoxFit.cover,
+                circleSize: 8.0,
+                circleSizeOnDrag: 13.0,
+                circlePaintColor: Colors.red,
+                borderPaintColor: Colors.red,
+                onChangeEnd: (position) {
+                  this.endPos = position;
+                  print("TrimEditor onchange end ==== $position");
+                  // setState(() {});
+                },
+                onChangeStart: (position) {
+                  this.startPos = position;
+                  print("TrimEditor onchange start ==== $position");
+                  // setState(() {});
+                },
+                onChangePlaybackState: (state) {
+                  print("TrimEditor onchange onChangePlaybackState ==== $state");
+                },
               ),
-            // NOTE: Color Picker
-            ValueListenableBuilder(
-                valueListenable: ValueNotifier(widget.floatText),
-                builder: (BuildContext context, String value, Widget? child) {
-                  if (value.isNotEmpty) {
-                    return Positioned(
-                      top: 80,
-                      right: 0,
-                      child: ColorPicker(300, (current) {
-                        if (current != null) {
-                          try {
-                            widget.textColor.value = current;
-                            setState(() {});
-                          } catch (e) {
-                            print(e);
-                          }
-                        }
-                      }),
-                    );
-                  }
-                  return Container();
-                }),
-
-            // NOTE: Moveable Text
-            ValueListenableBuilder(
+            ),
+          // NOTE: Color Picker
+          ValueListenableBuilder(
               valueListenable: ValueNotifier(widget.floatText),
               builder: (BuildContext context, String value, Widget? child) {
                 if (value.isNotEmpty) {
                   return Positioned(
-                    top: 10,
-                    bottom: 55,
-                    left: 0,
+                    top: 80,
                     right: 0,
-                    child: RepaintBoundary(
-                      key: widget.containerKey,
-                      child: Container(
-                        // color: Color.fromARGB(200, 0, 0, 2),
-                        child: DraggableTextEditor(
-                          textKey: widget.textKey,
-                          paintText: widget.paintText,
-                          notifier: widget.notifier,
-                          isEditfloatText: widget.isEditfloatText,
-                          textColor: widget.textColor,
-                          floatText: widget.floatText,
-                        ),
-                      ),
-                    ),
+                    child: ColorPicker(300, (current) {
+                      if (current != null) {
+                        try {
+                          widget.textColor.value = current;
+                          setState(() {});
+                        } catch (e) {
+                          print(e);
+                        }
+                      }
+                    }),
                   );
                 }
                 return Container();
-              },
-            ),
-            // NOTE: Progress compress with current progress
-            ValueListenableBuilder(
-                valueListenable: widget.download,
-                builder: (BuildContext context, bool value, Widget? child) {
-                  if (value) {
-                    return Positioned(
-                        child: Center(
-                      child: CircularProgressIndicator(),
-                    ));
-                  }
-                  return Container();
-                }),
-            ValueListenableBuilder(
-                valueListenable: widget.download,
-                builder: (BuildContext context, bool value, Widget? child) {
-                  if (value) {
-                    return Positioned(
-                        child: Center(
-                      child: Text(
-                        widget.processPercentage.toString() + "%",
-                        style: TextStyle(fontSize: 20),
+              }),
+
+          // NOTE: Moveable Text
+          ValueListenableBuilder(
+            valueListenable: ValueNotifier(widget.floatText),
+            builder: (BuildContext context, String value, Widget? child) {
+              if (value.isNotEmpty) {
+                return Positioned(
+                  top: 10,
+                  bottom: 55,
+                  left: 0,
+                  right: 0,
+                  child: RepaintBoundary(
+                    key: widget.containerKey,
+                    child: Container(
+                      // color: Color.fromARGB(200, 0, 0, 2),
+                      child: DraggableTextEditor(
+                        textKey: widget.textKey,
+                        paintText: widget.paintText,
+                        notifier: widget.notifier,
+                        isEditfloatText: widget.isEditfloatText,
+                        textColor: widget.textColor,
+                        floatText: widget.floatText,
                       ),
-                    ));
-                  }
-                  return Container();
-                })
-          ],
-        ),
+                    ),
+                  ),
+                );
+              }
+              return Container();
+            },
+          ),
+          // NOTE: Progress compress with current progress
+          ValueListenableBuilder(
+              valueListenable: widget.download,
+              builder: (BuildContext context, bool value, Widget? child) {
+                if (value) {
+                  return Positioned(
+                      child: Center(
+                    child: CircularProgressIndicator(),
+                  ));
+                }
+                return Container();
+              }),
+          ValueListenableBuilder(
+              valueListenable: widget.download,
+              builder: (BuildContext context, bool value, Widget? child) {
+                if (value) {
+                  return Positioned(
+                      child: Center(
+                    child: Text(
+                      widget.processPercentage.toString() + "%",
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  ));
+                }
+                return Container();
+              }),
+          //NOTE CTA Continue
+          Positioned(
+            bottom: 10,
+            left: 25,
+            right: 25,
+            child: Container(
+              color: Colors.blue,
+              height: 40,
+              child: Center(child: Text("BTN ACT ")),
+            ),
+          )
+        ],
       ),
     );
   }

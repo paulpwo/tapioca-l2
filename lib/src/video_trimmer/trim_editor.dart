@@ -251,7 +251,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         }
       });
 
-      widget.videoPlayerController.setVolume(1.0);
+      // widget.videoPlayerController.setVolume(1.0);
       _videoDuration = widget.videoPlayerController.value.duration.inMilliseconds;
       print(_videoFile!.path);
 
