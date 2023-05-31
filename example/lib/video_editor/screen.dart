@@ -243,6 +243,7 @@ class _VideoAppState extends State<VideoScreen> {
                 circleSizeOnDrag: 13.0,
                 circlePaintColor: Colors.red,
                 borderPaintColor: Colors.red,
+                showVideoDuration: true,
                 onChangeEnd: (position) {
                   this.endPos = position;
                   print("TrimEditor onchange end ==== $position");

@@ -64,6 +64,8 @@ class TrimEditor extends StatefulWidget {
   /// By default it is set to `true`.
   final bool showDuration;
 
+  final bool showVideoDuration;
+
   /// For providing a `TextStyle` to the
   /// duration text.
   ///
@@ -175,6 +177,7 @@ class TrimEditor extends StatefulWidget {
     this.onChangeStart,
     this.onChangeEnd,
     this.onChangePlaybackState,
+    this.showVideoDuration = false,
   });
 
   @override
@@ -214,6 +217,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   late Animation<double> _scrubberAnimation;
   AnimationController? _animationController;
   late Tween<double> _linearTween;
+
 
   Future<void> _initializeVideoController() async {
     if (_videoFile != null) {
@@ -407,6 +411,12 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
       });
   }
 
+  double _computeTotalVideoDuration() {
+    // use _videoStartPos and _videoEndPos to compute the total video duration
+    var totalDuration = _videoEndPos - _videoStartPos;
+    return totalDuration;
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -485,6 +495,11 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
                               .split('.')[0],
                           style: widget.durationTextStyle,
                         ),
+                        if (widget.showVideoDuration)
+                          Text(
+                            Duration(milliseconds: _computeTotalVideoDuration().toInt()).toString().split('.')[0],
+                            style: widget.durationTextStyle,
+                          ),
                         Text(
                           Duration(milliseconds: _videoEndPos.toInt())
                               .toString()
